@@ -25,24 +25,31 @@
 
 #pragma once
 
-#include "asnhighlighterhelper.h"
-
-#include <texteditor/syntaxhighlighter.h>
+#include <string>
+#include <vector>
 
 namespace Asn1Acn {
 namespace Internal {
 
-class AsnHighlighter : public TextEditor::SyntaxHighlighter
+class AsnHighlighterHelper
 {
-    Q_OBJECT
-
 public:
-    AsnHighlighter(QTextDocument *document = 0);
-    void highlightBlock(const QString &text) override;
+    enum class AsnFormat {
+        Keyword,
+        Type,
+        Comment,
+        String,
+        Cnt
+    };
 
-private:
-    AsnHighlighterHelper m_helper;
+    struct TokenDescription {
+        AsnFormat format;
+        size_t position;
+        size_t length;
+    };
+
+    std::vector<TokenDescription> getTokensDescription(const std::string &codeBlock) const;
 };
 
 } // namespace Internal
-} // namespace AsnEditor
+} // namespace Asn1Acn

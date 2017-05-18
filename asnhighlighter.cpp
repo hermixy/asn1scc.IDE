@@ -24,6 +24,7 @@
 ****************************************************************************/
 
 #include "asnhighlighter.h"
+
 #include <QTextDocument>
 
 using namespace Asn1Acn::Internal;
@@ -33,75 +34,19 @@ AsnHighlighter::AsnHighlighter(QTextDocument *document) :
     SyntaxHighlighter(document)
 {
     static const QVector<TextStyle> categories({
+        C_KEYWORD,
         C_TYPE,
         C_COMMENT,
+        C_STRING,
     });
     setTextFormatCategories(categories);
-
-    QStringList keywords;
-    keywords << "\\bSEQUENCE OF\\b"
-             << "\\bCHOICE\\b"
-             << "\\bSEQUENCE\\b"
-             << "\\bOPTIONAL\\b"
-             << "\\bOCTET STRING\\b"
-             << "\\bENUMERATED\\b"
-             << "\\bBIT STRING\\b"
-             << "\\bBOOLEAN\\b"
-             << "\\bINTEGER\\b"
-             << "\\bIA5String\\b"
-             << "\\bNULL\\b";
-
-    foreach (const QString &pattern, keywords)
-        m_keywordPatterns.append(QRegularExpression(pattern));
-
-    m_commentPattern.setPattern("--");
 }
 
 void AsnHighlighter::highlightBlock(const QString &text)
 {
-    foreach (const QRegularExpression &pattern, m_keywordPatterns) {
-        int offset = 0;
-        while (offset < text.size()) {
-            QRegularExpressionMatch regExpMatch = pattern.match(text, offset);
-
-            if (!regExpMatch.hasMatch())
-                break;
-
-            setFormat(regExpMatch.capturedStart(), regExpMatch.capturedLength(),
-                      formatForCategory(AsnTypeFormat));
-            offset = regExpMatch.capturedEnd();
-        }
-    }
-
-    int ret = 0;
-    do {
-        ret = highlightComment(text, ret);
-    } while (ret != 0);
-}
-
-int AsnHighlighter::highlightComment(const QString &text, int offset)
-{
-    /**
-     * This function shall return 0 in case no more comments are expected, or
-     * offset of the first character after the end of the code block newly highlighted as comment.
-     **/
-
-    QRegularExpressionMatch beginComment = m_commentPattern.match(text, offset);
-    if (!beginComment.hasMatch())
-        return 0;
-
-    QRegularExpressionMatch endComment = m_commentPattern.match(text,
-                                                                beginComment.capturedEnd());
-    if (!endComment.hasMatch()) {
-        setFormat(beginComment.capturedStart(),
-                  text.length() - beginComment.capturedStart(),
-                  formatForCategory(AsnCommentFormat));
-        return 0;
-    }
-
-    setFormat(beginComment.capturedStart(),
-              endComment.capturedEnd() - beginComment.capturedStart(),
-              formatForCategory(AsnCommentFormat));
-
-    return endComment.capturedEnd();
+    auto descriptions = m_helper.getTokensDescription(text.toStdString());
+    for (auto description : descriptions)
+        setFormat(description.position,
+                  description.length,
+                  formatForCategory(static_cast<int>(description.format)));
 }

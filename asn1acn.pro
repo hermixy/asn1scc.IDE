@@ -35,7 +35,9 @@ SOURCES += \
     asncompletionassist.cpp \
     asnoutline.cpp \
     asnhighlighter.cpp \
-    asnsnippetprovider.cpp
+    asnsnippetprovider.cpp \
+    asnhighlighterhelper.cpp \
+    lexer/asnLexer.cpp
 
 HEADERS += \
     asn1acn_global.h \
@@ -47,7 +49,9 @@ HEADERS += \
     asncompletionassist.h \
     asnoutline.h \
     asnhighlighter.h \
-    asnsnippetprovider.h
+    asnsnippetprovider.h \
+    asnhighlighterhelper.h \
+    lexer/asnLexer.h
 
 DISTFILES += \
     LICENSE \
@@ -55,6 +59,9 @@ DISTFILES += \
 
 RESOURCES += \
     asn1acn.qrc
+
+LIBS += -L/usr/local/libs/ -lantlr4-runtime
+INCLUDEPATH += /usr/local/include/antlr4-runtime/
 
 # Qt Creator linking
 
